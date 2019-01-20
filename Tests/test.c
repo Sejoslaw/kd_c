@@ -1,4 +1,4 @@
-// This must be define only ONCE.
+// Global define.
 #define KD_DEFINE
 #include "../kd.h"
 

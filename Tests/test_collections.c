@@ -8,6 +8,16 @@ void test_foreach(kd_collection *col, kd_collection_element *element) {
     printf("col = %p ; element = %p ; element value = %i \n", col, element->value, *(int *) element->value);
 }
 
+KD_BOOL test_where(kd_collection *col, kd_collection_element *element) {
+    int value = *(int *) element->value;
+    
+    if (value % 2 == 0) {
+        return KD_TRUE;
+    }
+
+    return KD_FALSE;
+}
+
 int main(int argc, char *argv[]) {
     kd_collection *col = kd_collection_new();
     printf("Collection created - col: %p ; head: %p ; size: %i \n", col, col->head, (int) col->size);
@@ -52,15 +62,23 @@ int main(int argc, char *argv[]) {
     printf("col[6] = %p ; col[6].value = %i \n", element->value, *(int *) element->value);
 
     printf("Testing parse... \n");
-    void **table = (void **) malloc(5 * sizeof(void *));
+    kd_collection_size collection_size = 10;
+    void **table = (void **) malloc(collection_size * sizeof(void *));
     i = 0;
-    while (i < 5) {
+    while (i < collection_size) {
         int *ptr = malloc(sizeof(int));
         *ptr = i + 1234;
         table[i] = ptr;
         i++;
     }
-    col = kd_collection_parse(table, 5);
+    col = kd_collection_parse(table, collection_size);
     element = kd_collection_get(col, 2);
     printf("col[1] = %p ; col[1].value = %i \n", element->value, *(int *) element->value);
+
+    printf("Write collection... \n");
+    kd_collection_foreach(col, &test_foreach);
+
+    printf("Testing where selector.... \n");
+    kd_collection *col2 = kd_collection_where(col, &test_where);
+    kd_collection_foreach(col2, &test_foreach);
 }

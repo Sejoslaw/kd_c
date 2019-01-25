@@ -134,6 +134,10 @@ typedef unsigned char KD_BOOL;
 typedef long double kd_collection_size;
 typedef long double kd_collection_index;
 
+#define KD_COLLECTION_ACTION void (*kd_collection_action)(kd_collection *, kd_collection_element*)
+#define KD_COLLECTION_FUNCTION void *(*kd_collection_function)(kd_collection *, kd_collection_element*)
+#define KD_COLLECTION_SELECTOR KD_BOOL (*kd_collection_selector)(kd_collection *, kd_collection_element*)
+
 typedef struct kd_collection_element
 {
     void *value;
@@ -321,7 +325,7 @@ static KD_BOOL kd_collection_push(kd_collection *col, void *value) {
 }
 
 // Executes given function on each element of given collection
-static void kd_collection_foreach(kd_collection *col, void (*kd_collection_action)(kd_collection *, kd_collection_element*)) {
+static void kd_collection_foreach(kd_collection *col, KD_COLLECTION_ACTION) {
     if (kd_collection_is_empty(col)) {
         return;
     }
@@ -331,6 +335,28 @@ static void kd_collection_foreach(kd_collection *col, void (*kd_collection_actio
         (*kd_collection_action)(col, current);
         current = current->next_element;
     }
+}
+
+// Returns new collection with filtered values based on given selector.
+static kd_collection *kd_collection_where(kd_collection *col, KD_COLLECTION_SELECTOR) {
+    kd_collection *new_col = kd_collection_new();
+
+    if (kd_collection_is_empty(col)) {
+        return new_col;
+    }
+
+    kd_collection_element *current = col->head;
+    while (current) {
+        KD_BOOL selected = (*kd_collection_selector)(col, current);
+        
+        if (selected) {
+            kd_collection_add(new_col, current->value);
+        }
+
+        current = current->next_element;
+    }
+
+    return new_col;
 }
 
 // Parses given table to a collection.
